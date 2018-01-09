@@ -18,6 +18,14 @@ ramp_a=4;
 pin=2.7;
 
 // Modules
+module stop_relief(z=0) {
+    rotate([0,0,z+109]) {
+        rotate_extrude(angle=9.5, $fn=frags) {
+            translate([83.5/2-ramp+2,0,0]) square(size=[ramp+3,10.6]);
+        }
+    }
+}
+
 module ramp(z=0) {
     rotate([0,0,z]) {
         // this is innacurate and ugly, we need a follow-path library
@@ -26,15 +34,15 @@ module ramp(z=0) {
         difference() {
             rotate([ramp_a,0,0]) {
                 // ramp
-                rotate_extrude(angle=106, $fn=frags) {
+                rotate_extrude(angle=107, $fn=frags) {
                     translate([83.5/2-6.3,0,0]) square(size=[ramp+1,4.5]);
                 }
                 // stop
-                rotate([0,0,106]) {
-                    rotate_extrude(angle=14, $fn=frags) {
+                rotate([0,0,107]) {
+                    rotate_extrude(angle=13, $fn=frags) {
                         translate([83.5/2-ramp,0,0]) square(size=[ramp+1,10.6]);
                     }
-                }
+                }                
                 // alignment pins
                 // x rotation counteracts ramp angle rotation (pins are vertical)
                 rotate([-ramp_a,0,35]) translate([38.5,0,-1.5]) cylinder(h=2, d=pin, $fn=10);
@@ -54,10 +62,9 @@ module ramp(z=0) {
                 cube(size=[100, 100, 3.3*2], center=true);
             }
             union() {
-                rotate_extrude(angle=106) square(50);
+                rotate_extrude(angle=108) square(50);
             }
         }
-
     }
 }
 
@@ -77,8 +84,13 @@ intersection() {
         ramp(0);
         ramp(180);
     }
-    // Outer funnel
-    cylinder(h=17, d2=86.00, d1=83.5, $fn=frags);
+    difference() {
+        // Outer funnel
+        cylinder(h=17, d2=86.00, d1=83.5, $fn=frags);
+        // Stop reliefs (alignment)
+        stop_relief(0);
+        stop_relief(180);
+    }
 }
 
 echo(version=version());
