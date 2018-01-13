@@ -49,26 +49,32 @@ module ramp(z=0) {
                 rotate([-ramp_a,0,35]) translate([38.5,0,-1.5]) cylinder(h=2, d=pin, $fa=frag_a, $fs=frag_s);
                 rotate([-ramp_a,0,80]) translate([38.5,0,-1.5]) cylinder(h=2, d=pin, $fa=frag_a, $fs=frag_s);
             }
-            // trim the beginning to be vertical (after the rotation)
-            translate([0,-50,0]) cube(50);
+            // bevel the start of the ramp
+            translate([42,0,0]) rotate([0,0,67.5]) translate([-10,0,0]) cube(10);
+            translate([42,0,0]) rotate([0,50,67.5]) translate([-12.3,2.7,0]) cube(10);
         }
 
         // Thicker walls above ramps
-        // FIXME: These should smooth into the wall from where they start through 7deg back 
-        intersection() {
-            difference() {
-                cylinder(h=17, d2=86.00, d1=83.5, $fa=frag_a);
-                cylinder(h=40, d2=86.00-2*rwall, d1=83.5-2*rwall, $fa=frag_a, center=true);
-                translate([0,0,13]) cylinder(h=5, d=90);
-                cube(size=[100, 100, 3.3*2], center=true);
-            }
+        difference() {
             union() {
-                rotate_extrude(angle=110) square(50);
+                intersection() {
+                    // outer cone
+                    cylinder(h=17, d2=86.00, d1=83.5, $fa=frag_a);
+                    // limit to 110 degrees
+                    rotate_extrude(angle=110) square(50);
+                }
+                // fade into the outer wall
+                translate([39.5,-15,0]) cube(15);
             }
+            // remove the inner cone
+            cylinder(h=40, d2=86.00-2*rwall, d1=83.5-2*rwall, $fa=frag_a, center=true);
+            // trim the top
+            translate([-50,-50,13]) cube(100);
+            // trim the bottom
+            cube(size=[100, 100, 6.6], center=true);
         }
     }
 }
-
 
 intersection() {
     union() {
