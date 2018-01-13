@@ -14,6 +14,9 @@ the Breville (r) line of espresso machines.
 The scad-models project is released under the terms of the
 [BSD 2-Clause "Simplified" License](http://www.opensource.org/licenses/BSD-2-Clause):
 
+Copyright (c) 2018, Darren Hart<br/>
+All rights reserved.
+
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
