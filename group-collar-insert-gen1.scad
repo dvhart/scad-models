@@ -20,8 +20,8 @@ pin=2.7;
 
 // Modules
 module stop_relief(z=0) {
-    rotate([0,0,z+109]) {
-        rotate_extrude(angle=9.5, $fa=frag_a) {
+    rotate([0,0,z+111]) {
+        rotate_extrude(angle=7.5, $fa=frag_a) {
             translate([83.5/2-ramp+2,0,0]) square(size=[ramp+3,10.6]);
         }
     }
@@ -35,12 +35,12 @@ module ramp(z=0) {
         difference() {
             rotate([ramp_a,0,0]) {
                 // ramp
-                rotate_extrude(angle=107, $fa=frag_a) {
+                rotate_extrude(angle=109, $fa=frag_a) {
                     translate([83.5/2-6.3,0,0]) square(size=[ramp+1,4.5]);
                 }
                 // stop
-                rotate([0,0,107]) {
-                    rotate_extrude(angle=13, $fa=frag_a) {
+                rotate([0,0,109]) {
+                    rotate_extrude(angle=11, $fa=frag_a) {
                         translate([83.5/2-ramp,0,0]) square(size=[ramp+1,10.6]);
                     }
                 }                
@@ -63,7 +63,7 @@ module ramp(z=0) {
                 cube(size=[100, 100, 3.3*2], center=true);
             }
             union() {
-                rotate_extrude(angle=108) square(50);
+                rotate_extrude(angle=110) square(50);
             }
         }
     }
