@@ -30,7 +30,8 @@ ramp_w=6.3;
 ramp_grade=4;       // ramp grade in degrees (steepness)
 ramp_arc=109;       // ramp arc in degrees (length)
 ramp_wall=3.0;
-ramp_wall_arc=ramp_arc+1;
+ramp_wall_a=5;
+ramp_wall_arc=ramp_arc-ramp_wall_a+1;
 ramp_wall_id_max=cone_od_max-2*ramp_wall;
 ramp_wall_id_min=cone_od_min-2*ramp_wall;
 
@@ -90,7 +91,7 @@ module ramp(z=0) {
             }
             // bevel the start of the ramp
             translate([42,0,0]) rotate([0,0,67.5]) translate([-10,0,0]) cube(10);
-            translate([42,0,0]) rotate([0,50,67.5]) translate([-12.3,2.7,0]) cube(10);
+            translate([42,0,0]) rotate([0,50,67.5]) translate([-12.3,3.1,0]) cube(10);
         }
 
         // Thicker walls above ramps
@@ -99,15 +100,13 @@ module ramp(z=0) {
                 intersection() {
                     // outer cone
                     cylinder(h=cone_h, d2=cone_od_max, d1=cone_od_min, $fa=frag_a);
-                    rotate_extrude(angle=ramp_wall_arc) square(50);
+                    rotate([0,0,ramp_wall_a]) rotate_extrude(angle=ramp_wall_arc) square(50);
                 }
                 // fade into the outer wall
-                translate([39.5,-15,0]) cube(15);
+                rotate([0,0,ramp_wall_a]) translate([38.8,-15,0]) rotate([0,4.2,.25]) cube(15);
             }
             // remove the inner cone
-            // FIXME: This cone is stretched to deal with shared plane shearing effects in
-            // the preview - making the wall more vertical than it should be.
-            cylinder(h=40, d2=ramp_wall_id_max, d1=ramp_wall_id_min, $fa=frag_a, center=true);
+            cylinder(cone_h, d2=ramp_wall_id_max, d1=ramp_wall_id_min, $fa=frag_a);
             // trim the top
             translate([-50,-50,13]) cube(100);
             // trim the bottom
@@ -121,12 +120,11 @@ intersection() {
         // Main block minus inner cone
         difference() {
             block(cone_h);
-            // FIXME: This cone is stretched to deal with shared plane shearing effects in
-            // the preview - making the wall more vertical than it should be.
-            cylinder(h=40, d2=cone_id_max, d1=cone_id_min, $fa=frag_a, center=true);
+            cylinder(cone_h, d2=cone_id_max, d1=cone_id_min, $fa=frag_a);
+            // eliminate the shared plane shearing effect in preview (no affect on final model)
+            translate([0,0,cone_h-.5]) cylinder(1, d=cone_id_max-.1, $fa=frag_a);
             // Cut off the bottom before adding the ramps
             // FIXME: This should go from 3.2 at 120deg to 3.4 at 180deg
-            // FIXME: also needs follow-path library
             block(cone_b, 1);
         }
         // Ramps
