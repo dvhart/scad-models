@@ -10,6 +10,8 @@
  * License: BSD-2-Clause
  */
 
+//model_ver="v0.4";
+
 // General geometry parameters
 frag_a=1;           // affects number of sides on larger rotations
 frag_s=1;           // affects number of sides on alignment pins
@@ -85,9 +87,14 @@ module ramp(z=0) {
                     rotate_extrude(angle=stop_arc, $fa=frag_a) {
                         translate([ramp_id/2,0,0]) square(size=[ramp_w+1,stop_h]);
                     }
+                    // add the version
+                    //translate([ramp_id/2+.25,2,1]) rotate([0,-90,0]) {
+                    //    linear_extrude(1) text(model_ver, size=3);
+                    //}
                     // bevel the top interior corner of the stop
                     translate([0,0,stop_h-1.5]) cylinder(3, d2=ramp_id+4,d1=ramp_id-2, $fa=frag_a);
-                }                
+                }
+
                 // alignment pins
                 pin(pin1_a);
                 pin(pin2_a);
