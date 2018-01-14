@@ -27,6 +27,7 @@ cone_id_max=cone_od_max-2*cone_wall;
 cone_id_min=cone_od_min-2*cone_wall;
 
 ramp_w=6.3;
+ramp_id=cone_od_min-ramp_w*2;
 ramp_grade=4;       // ramp grade in degrees (steepness)
 ramp_arc=109;       // ramp arc in degrees (length)
 ramp_wall=3.0;
@@ -77,13 +78,15 @@ module ramp(z=0) {
             rotate([ramp_grade,0,0]) {
                 // ramp
                 rotate_extrude(angle=ramp_arc, $fa=frag_a) {
-                    translate([cone_od_min/2-ramp_w,0,0]) square(size=[ramp_w+1,4.5]);
+                    translate([ramp_id/2,0,0]) square(size=[ramp_w+1,4.5]);
                 }
                 // stop
-                rotate([0,0,ramp_arc]) {
+                rotate([0,0,ramp_arc]) difference() {
                     rotate_extrude(angle=stop_arc, $fa=frag_a) {
-                        translate([cone_od_min/2-ramp_w,0,0]) square(size=[ramp_w+1,stop_h]);
+                        translate([ramp_id/2,0,0]) square(size=[ramp_w+1,stop_h]);
                     }
+                    // bevel the top interior corner of the stop
+                    translate([0,0,stop_h-1.5]) cylinder(3, d2=ramp_id+4,d1=ramp_id-2, $fa=frag_a);
                 }                
                 // alignment pins
                 pin(pin1_a);
@@ -109,6 +112,8 @@ module ramp(z=0) {
             cylinder(cone_h, d2=ramp_wall_id_max, d1=ramp_wall_id_min, $fa=frag_a);
             // trim the top
             translate([-50,-50,13]) cube(100);
+            // bevel the top of the ramp wall
+            translate([0,0,13-1]) cylinder(1.4, d2=cone_id_max, d1=cone_id_max-2, $fa=frag_a);
             // trim the bottom
             block(cone_b, 1);
         }
