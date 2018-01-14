@@ -10,19 +10,59 @@
  * License: BSD-2-Clause
  */
 
-frag_a=1; // affects number of sides on larger rotations
-frag_s=1; // affects number of sides on alignment pins
-wall=2.6;
-rwall=3.0;
-ramp=6.3;
-ramp_a=4;
-pin=2.7;
+// General geometry parameters
+frag_a=1;           // affects number of sides on larger rotations
+frag_s=1;           // affects number of sides on alignment pins
+bbox_w=100;         // bounding box width (very generous) used for block and plane ops
 
-// Modules
+// Model dimensions
+cone_h=17;          // total height of cone
+cone_b=3.3;         // bottom of the cone not counting the ramps
+// FIXME: New measurement: 86.5
+cone_od_max=86;     // top of inner cone
+cone_od_min=83.5;   // bottom of inner cone
+// FIXME: 2.5 at cone_h and 1.9 at cone_b
+cone_wall=2.6;      // wall thickness of principle cone
+cone_id_max=cone_od_max-2*cone_wall;
+cone_id_min=cone_od_min-2*cone_wall;
+
+ramp_w=6.3;
+ramp_grade=4;       // ramp grade in degrees (steepness)
+ramp_arc=109;       // ramp arc in degrees (length)
+ramp_wall=3.0;
+ramp_wall_arc=ramp_arc+1;
+ramp_wall_id_max=cone_od_max-2*ramp_wall;
+ramp_wall_id_min=cone_od_min-2*ramp_wall;
+
+pin_d=2.7;          // alignment pin diameter
+pin_h=2;
+pin1_a=35;
+pin2_a=80;
+
+stop_h=10.6;
+stop_arc=11;
+stop_relief_a=111;
+stop_relief_arc=7.5;
+stop_relief_h=10.6;
+
+// Construction modules
+module block(h1, h2=0) {
+    translate([-bbox_w/2, -bbox_w/2, -h2]) cube(size=[bbox_w, bbox_w, h1+h2]);
+}
+
+// Model component modules
+module pin(z=0) {
+    // -x rotation counteracts ramp angle rotation (pins are vertical)
+    rotate([-ramp_grade,0,z]) translate([38.5,0,-1.5]) {
+        cylinder(h=pin_h, d=pin_d, $fa=frag_a, $fs=frag_s);
+    }
+}
+
 module stop_relief(z=0) {
-    rotate([0,0,z+111]) {
-        rotate_extrude(angle=7.5, $fa=frag_a) {
-            translate([83.5/2-ramp+2,0,0]) square(size=[ramp+3,10.6]);
+    rotate([0,0,z+stop_relief_a]) {
+        rotate_extrude(angle=stop_relief_arc, $fa=frag_a) {
+            // h is 10.6 here by chance, not because it should be stop_h
+            translate([cone_od_min/2-ramp_w+2,0,0]) square(size=[ramp_w+3,stop_relief_h]);
         }
     }
 }
@@ -33,21 +73,20 @@ module ramp(z=0) {
         // maybe: https://www.thingiverse.com/thing:186660
         // ref from: https://github.com/openscad/openscad/issues/114
         difference() {
-            rotate([ramp_a,0,0]) {
+            rotate([ramp_grade,0,0]) {
                 // ramp
-                rotate_extrude(angle=109, $fa=frag_a) {
-                    translate([83.5/2-6.3,0,0]) square(size=[ramp+1,4.5]);
+                rotate_extrude(angle=ramp_arc, $fa=frag_a) {
+                    translate([cone_od_min/2-ramp_w,0,0]) square(size=[ramp_w+1,4.5]);
                 }
                 // stop
-                rotate([0,0,109]) {
-                    rotate_extrude(angle=11, $fa=frag_a) {
-                        translate([83.5/2-ramp,0,0]) square(size=[ramp+1,10.6]);
+                rotate([0,0,ramp_arc]) {
+                    rotate_extrude(angle=stop_arc, $fa=frag_a) {
+                        translate([cone_od_min/2-ramp_w,0,0]) square(size=[ramp_w+1,stop_h]);
                     }
                 }                
                 // alignment pins
-                // x rotation counteracts ramp angle rotation (pins are vertical)
-                rotate([-ramp_a,0,35]) translate([38.5,0,-1.5]) cylinder(h=2, d=pin, $fa=frag_a, $fs=frag_s);
-                rotate([-ramp_a,0,80]) translate([38.5,0,-1.5]) cylinder(h=2, d=pin, $fa=frag_a, $fs=frag_s);
+                pin(pin1_a);
+                pin(pin2_a);
             }
             // bevel the start of the ramp
             translate([42,0,0]) rotate([0,0,67.5]) translate([-10,0,0]) cube(10);
@@ -59,19 +98,20 @@ module ramp(z=0) {
             union() {
                 intersection() {
                     // outer cone
-                    cylinder(h=17, d2=86.00, d1=83.5, $fa=frag_a);
-                    // limit to 110 degrees
-                    rotate_extrude(angle=110) square(50);
+                    cylinder(h=cone_h, d2=cone_od_max, d1=cone_od_min, $fa=frag_a);
+                    rotate_extrude(angle=ramp_wall_arc) square(50);
                 }
                 // fade into the outer wall
                 translate([39.5,-15,0]) cube(15);
             }
             // remove the inner cone
-            cylinder(h=40, d2=86.00-2*rwall, d1=83.5-2*rwall, $fa=frag_a, center=true);
+            // FIXME: This cone is stretched to deal with shared plane shearing effects in
+            // the preview - making the wall more vertical than it should be.
+            cylinder(h=40, d2=ramp_wall_id_max, d1=ramp_wall_id_min, $fa=frag_a, center=true);
             // trim the top
             translate([-50,-50,13]) cube(100);
             // trim the bottom
-            cube(size=[100, 100, 6.6], center=true);
+            block(cone_b, 1);
         }
     }
 }
@@ -80,12 +120,14 @@ intersection() {
     union() {
         // Main block minus inner cone
         difference() {
-            translate([-50,-50,0]) cube(size=[100, 100, 17]);
-            cylinder(h=40, d2=86.00-2*wall, d1=83.5-2*wall, $fa=frag_a, center=true);
+            block(cone_h);
+            // FIXME: This cone is stretched to deal with shared plane shearing effects in
+            // the preview - making the wall more vertical than it should be.
+            cylinder(h=40, d2=cone_id_max, d1=cone_id_min, $fa=frag_a, center=true);
             // Cut off the bottom before adding the ramps
-            // This should go from 3.2 at 120deg to 3.4 at 180deg
+            // FIXME: This should go from 3.2 at 120deg to 3.4 at 180deg
             // FIXME: also needs follow-path library
-            cube(size=[100, 100, 3.3*2], center=true);
+            block(cone_b, 1);
         }
         // Ramps
         ramp(0);
@@ -93,7 +135,7 @@ intersection() {
     }
     difference() {
         // Outer funnel
-        cylinder(h=17, d2=86.00, d1=83.5, $fa=frag_a);
+        cylinder(h=cone_h, d2=cone_od_max, d1=cone_od_min, $fa=frag_a);
         // Stop reliefs (alignment)
         stop_relief(0);
         stop_relief(180);
