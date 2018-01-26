@@ -9,6 +9,8 @@ group-collar-insert-gen1
 the Breville (r) line of espresso machines.
 
 ![Model Screenshot](https://raw.githubusercontent.com/dvhart/scad-models/master/docs/assets/images/group-collar-insert-gen1.png "Initial screenshot of the early model")
+![Model
+Print](https://raw.githubusercontent.com/dvhart/scad-models/master/docs/assets/images/group-collar-insert-gen1-shapeways-hp-nylon.jpg "v0.5 Shapeways print in Black HP Nylon Plastic")
 
 ## License
 The scad-models project is released under the terms of the
